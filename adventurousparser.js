@@ -1,15 +1,13 @@
-function Kommandant() {
+function AdventurousParser() {
 
-    this.commands = [];
-
-    this.buildParser = function(pattern) {
+    var buildParser = function(pattern) {
         var regexp = pattern;
         var params = [];
 
         // groups
 
-        var groupRe =       /\(.*?\)/g;
-        var groupMatches = pattern.match(groupRe);
+        var groupRegex = /\(.*?\)/g;
+        var groupMatches = pattern.match(groupRegex);
 
         if (groupMatches) {
             for (var i = 0; i < groupMatches.length; i++) {
@@ -20,26 +18,40 @@ function Kommandant() {
             }
         }
 
+        // optional groups with leading whitespace
+
+        var optGroupRegex = / \[.*?\]/g;
+        var optGroupMatches = pattern.match(optGroupRegex);
+
+        if (optGroupMatches) {
+            for (var i = 0; i < optGroupMatches.length; i++) {
+                var optGroupMatch = optGroupMatches[i];
+                var optGroupReplace = optGroupMatch;
+                optGroupReplace = optGroupReplace.replace(" [", "(?: (?:");
+                optGroupReplace = optGroupReplace.replace("]", ")|)");
+                regexp = regexp.replace(optGroupMatch, optGroupReplace);
+            }
+        }
+
         // optional groups
 
-        var optGroupRe =    /\[.*?\]/g;
-        var optGroupMatches = pattern.match(optGroupRe);
+        var optGroupRegex = /\[.*?\]/g;
+        var optGroupMatches = pattern.match(optGroupRegex);
 
         if (optGroupMatches) {
             for (var i = 0; i < optGroupMatches.length; i++) {
                 var optGroupMatch = optGroupMatches[i];
                 var optGroupReplace = optGroupMatch;
                 optGroupReplace = optGroupReplace.replace("[", "(?:");
-                optGroupReplace = optGroupReplace.replace("]", ")");
-                optGroupReplace = optGroupReplace + "?";
+                optGroupReplace = optGroupReplace.replace("]", ")?");
                 regexp = regexp.replace(optGroupMatch, optGroupReplace);
             }
         }
 
         // parameters
 
-        var paramRe =       /:[-_a-zA-Z0-9]+/g;
-        var paramMatches = pattern.match(paramRe);
+        var paramRegex = /:[-_a-zA-Z0-9]+/g;
+        var paramMatches = pattern.match(paramRegex);
 
         if (paramMatches) {
             for (var i = 0; i < paramMatches.length; i++) {
@@ -63,13 +75,12 @@ function Kommandant() {
         }
     };
 
-    this.parse = function(input, pattern) {
-        var parser = this.buildParser(pattern);
+    var parse = function(input, pattern) {
+        var parser = buildParser(pattern);
         var params = {};
         var matching = parser.regex.test(input);
 
         if (matching) {
-            console.log(input, parser.regex);
             params.input = input;
             if (parser.params.length > 0) {
                 var match = parser.regex.exec(input);
@@ -90,34 +101,19 @@ function Kommandant() {
         };
     };
 
-    this.process = function(input, pattern) {
-        var result = parse(input, pattern);
-        console.log("RESULT: ", result);
-        return result;
-    };
+    this.commands = [];
 
-    this.on = function(param1, param2) {
-        if(param1 && param2) {
-            addRoute(param1, param2);
-        } else if (param1) {
-            var routes = param1;
-            for( prop in routes) {
-                this.addRoute(prop, routes[prop]);
-            }
-        }
-    };
-
-    this.addRoute = function(pattern, callback) {
+    this.addCommand = function(pattern, callback) {
         this.commands.push({
             pattern: pattern,
             callback: callback
         });
     };
 
-    this.resolve = function(input) {
+    this.parse = function(input) {
         for( var i = 0; i < this.commands.length; i++ ) {
             var command = this.commands[i];
-            var result = this.parse(input, command.pattern);
+            var result = parse(input, command.pattern);
             if ( result.matching ) {
                 command.callback(result.params);
                 return result;

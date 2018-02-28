@@ -1,0 +1,75 @@
+<html>
+
+<head>
+    <script type="text/javascript" src="adventurousparser.js"></script>
+</head>
+
+<body>
+    <div id="output"></div>
+    <form id="input-form">
+        <input id="input-field">
+    </form>
+
+    <script>
+        var form = document.getElementById("input-form");
+        var field = document.getElementById("input-field");
+
+        form.onsubmit = function (e) {
+            e.preventDefault();
+            parser.parse(field.value);
+            field.value = null;
+        };
+
+        function log(value) {
+            output.innerHTML += "<div>&gt; " + field.value + "</div>";
+            output.innerHTML += "<div>" + value + "</div>";
+        }
+
+        var command = {
+            help: function() {
+                log("nimm, geh(e), untersuche, betrachte, schau(e)")
+            },
+            go: function(target) {
+                log("GO TO " + target);
+            },
+            take: function(item, giver) {
+                if (giver) {
+                    log("TAKE " + item + " FROM " + giver);
+                } else {
+                    log("TAKE " + item);
+                }
+            },
+            examine: function(item) {
+                log("EXAMINE " + item);
+            },
+            unknown: function() {
+                log("Das habe ich nicht verstanden. Gib 'hilfe' für verfügbare Kommandos ein.");
+            }
+        }
+
+        var parser = new AdventurousParser();
+        
+        parser.addCommand(
+            "nimm [den|die|das] :item (aus|von) :giver",
+            function(params) { command.take(params.item, params.giver) }
+        );
+        parser.addCommand(
+            "nimm [den|die|das] :item",
+            function(params) { command.take(params.item) }
+        );
+        parser.addCommand(
+            "geh[e] [nach|in|zu] [den|die|das] :target",
+            function(params) { command.go(params.target) }
+        );
+        parser.addCommand(
+            "(betrachte|schau[e]|untersuche) [den|die|das] :item",
+            function(params) { command.examine(params.item) }
+        );
+        parser.addCommand(
+            ":else",
+            function(params) { command.unknown(params.input)}
+        );
+    </script>
+</body>
+
+</html>
