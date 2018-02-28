@@ -1,13 +1,14 @@
 <html>
 
 <head>
+    <title>Adventurous Parser Demo</title>
     <script type="text/javascript" src="adventurousparser.js"></script>
 </head>
 
 <body>
     <div id="output"></div>
     <form id="input-form">
-        <input id="input-field">
+        <input placeholder="Command" id="input-field" style="width:80%;padding:.5em" autocomplete="off">
     </form>
 
     <script>
@@ -21,13 +22,13 @@
         };
 
         function log(value) {
-            output.innerHTML += "<div>&gt; " + field.value + "</div>";
-            output.innerHTML += "<div>" + value + "</div>";
+            output.innerHTML += '<div style="margin-bottom:.5em">&gt; ' + field.value + '</div>';
+            output.innerHTML += '<div style="margin-bottom:.5em">' + value + '</div>';
         }
 
         var command = {
             help: function() {
-                log("nimm, geh(e), untersuche, betrachte, schau(e)")
+                log("Mögliche Kommandos: nimm, geh(e), untersuche, betrachte, schau(e)")
             },
             go: function(target) {
                 log("GO TO " + target);
@@ -49,6 +50,10 @@
 
         var parser = new AdventurousParser();
         
+        parser.addCommand(
+            "hilfe",
+            function(params) { command.help() }
+        );
         parser.addCommand(
             "nimm [den|die|das] :item (aus|von) :giver",
             function(params) { command.take(params.item, params.giver) }
