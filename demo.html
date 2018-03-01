@@ -12,21 +12,21 @@
     </form>
 
     <script>
-        var form = document.getElementById("input-form");
-        var field = document.getElementById("input-field");
+        let form = document.getElementById("input-form");
+        let field = document.getElementById("input-field");
 
         form.onsubmit = function (e) {
             e.preventDefault();
-            parser.parse(field.value);
+            parse(field.value);
             field.value = null;
         };
 
-        function log(value) {
+        let log = function(value) {
             output.innerHTML += '<div style="margin-bottom:.5em">&gt; ' + field.value + '</div>';
             output.innerHTML += '<div style="margin-bottom:.5em">' + value + '</div>';
         }
 
-        var command = {
+        let commands = {
             help: function() {
                 log("Mögliche Kommandos: nimm, geh(e), untersuche, betrachte, schau(e)")
             },
@@ -48,32 +48,44 @@
             }
         }
 
-        var parser = new AdventurousParser();
-        
-        parser.addCommand(
-            "hilfe",
-            function(params) { command.help() }
-        );
-        parser.addCommand(
-            "nimm [den|die|das] :item (aus|von) :giver",
-            function(params) { command.take(params.item, params.giver) }
-        );
-        parser.addCommand(
-            "nimm [den|die|das] :item",
-            function(params) { command.take(params.item) }
-        );
-        parser.addCommand(
-            "geh[e] [nach|in|zu] [den|die|das] :target",
-            function(params) { command.go(params.target) }
-        );
-        parser.addCommand(
-            "(betrachte|schau[e]|untersuche) [den|die|das] :item",
-            function(params) { command.examine(params.item) }
-        );
-        parser.addCommand(
-            ":else",
-            function(params) { command.unknown(params.input)}
-        );
+        let commandParsers = [
+            [
+                "hilfe",
+                function(params) { commands.help() }
+            ],
+            [
+                "nimm [den|die|das] :item (aus|von|vom) [der|dem] :giver",
+                function(params) { commands.take(params.item, params.giver) }
+            ],
+            [
+                "nimm [den|die|das] :item",
+                function(params) { commands.take(params.item) }
+            ],
+            [
+                "geh[e] [nach|in|zu|zum|zur] [dem|den|der|die|das] :target",
+                function(params) { commands.go(params.target) }
+            ],
+            [
+                "(betrachte|schau[e]|untersuche) [den|die|das] :item",
+                function(params) { commands.examine(params.item) }
+            ],
+            [
+                ":else",
+                function(params) { commands.unknown(params.input)}
+            ]
+        ]
+
+        let parse = function(input) {
+            for (let commandParser of commandParsers) {
+                let parser = new AdventurousParser(commandParser[0]);
+                let command = commandParser[1];
+                let parserResult = parser.match(input);
+                if (parserResult.matching) {
+                    command(parserResult.params);
+                    break;
+                }
+            };
+        }
     </script>
 </body>
 
