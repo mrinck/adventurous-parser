@@ -6,7 +6,10 @@
 </head>
 
 <body>
-    <div id="output"></div>
+    <div id="output">
+        <p><strong>Welcome to the AdventurousParser demo.</strong></p>
+        <p>Installed patterns:</p>
+    </div>
     <form id="input-form">
         <input placeholder="Command" id="input-field" style="width:80%;padding:.5em" autocomplete="off">
     </form>
@@ -28,45 +31,45 @@
 
         let commands = {
             help: function() {
-                log("Mögliche Kommandos: nimm, geh(e), untersuche, betrachte, schau(e)")
+                log("Available commands: pick up, take, go, examine, look")
             },
             go: function(target) {
-                log("GO TO " + target);
+                log("GOING TO " + target);
             },
             take: function(item, giver) {
                 if (giver) {
-                    log("TAKE " + item + " FROM " + giver);
+                    log("TAKING " + item + " FROM " + giver);
                 } else {
-                    log("TAKE " + item);
+                    log("TAKING " + item);
                 }
             },
             examine: function(item) {
-                log("EXAMINE " + item);
+                log("EXAMINING " + item);
             },
             unknown: function() {
-                log("Das habe ich nicht verstanden. Gib 'hilfe' für verfügbare Kommandos ein.");
+                log("Unknown command. Get help by typing 'help'.");
             }
         }
 
         let commandParsers = [
             [
-                "hilfe",
+                "help",
                 function(params) { commands.help() }
             ],
             [
-                "nimm [den|die|das] :item (aus|von|vom) [der|dem] :giver",
+                "(take|pick up) [the] :item (from|out of) [the] :giver",
                 function(params) { commands.take(params.item, params.giver) }
             ],
             [
-                "nimm [den|die|das] :item",
+                "(take|pick up) [the] :item",
                 function(params) { commands.take(params.item) }
             ],
             [
-                "geh[e] [nach|in|zu|zum|zur] [dem|den|der|die|das] :target",
+                "(go|walk) [to] [the] :target",
                 function(params) { commands.go(params.target) }
             ],
             [
-                "(betrachte|schau[e]|untersuche) [den|die|das] :item",
+                "(examine|look) [at|into] [the] :item",
                 function(params) { commands.examine(params.item) }
             ],
             [
@@ -85,6 +88,10 @@
                     break;
                 }
             };
+        }
+
+        for (var i = 0; i < commandParsers.length; i++) {
+            output.innerHTML += '<div style="margin-bottom:.5em"><code>' + commandParsers[i][0] + '</code></div>';
         }
     </script>
 </body>
